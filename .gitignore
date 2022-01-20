@@ -1,2 +1,9 @@
 .DS_Store
 a.out
+.vscode
+client
+server
+fr.subject.pdf
+*.o
+ft_printf/libft/libft.a
+ft_printf/libftprintf.a
