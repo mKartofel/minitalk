@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 10:33:59 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/21 13:48:54 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,20 +26,19 @@ void send_msg(int pid, char* msg)
     {
         c = msg[i];
         j = 7;
-        //ft_printf("sent= ");
         while(j >= 0)
         {
             b = c & (1u << j);
             if (b != 0)
             {
-                kill(pid, SIGUSR2);
-                //ft_printf("1");
+                if (kill(pid, SIGUSR2) == -1)
+                    exit(2);
             }
                 
             else
             {
-                kill(pid, SIGUSR1);
-                //ft_printf("0");
+                if (kill(pid, SIGUSR1) == -1)
+                    exit(2);
             }
                 
             j--;
@@ -59,12 +58,20 @@ void handle_SIGUSR1(int signum)
 
 int main (int argc, char ** argv)
 {
+	struct sigaction action_SIGUSR1;
+    int pid;
+
     if (argc != 3 || !argv[1] || !argv[2] || ft_strlen(argv[2]) == 0)
     {
         ft_printf("Usage : %s <PID> <Message>\n", argv[0]);
         exit(1);
     }
-	struct sigaction action_SIGUSR1;
+    pid = ft_atoi(argv[1]);
+    if (!pid)
+    {
+        ft_printf("Incorrect PID\nUsage : %s <PID> <Message>\n", argv[0]);
+        exit(1);
+    }
 	
 	action_SIGUSR1.sa_handler = handle_SIGUSR1;
 	sigemptyset (&action_SIGUSR1.sa_mask);
@@ -72,7 +79,6 @@ int main (int argc, char ** argv)
 
 	sigaction (SIGUSR1, &action_SIGUSR1, NULL);
 	
-	int pid = ft_atoi(argv[1]);
     send_msg(pid, argv[2]);
     
 }
