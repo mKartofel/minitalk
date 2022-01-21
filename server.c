@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 19:36:18 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/21 19:42:25 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,9 @@ void add_char()
 	
 	if (g_recvd_char.i >= g_recvd_char.msg_len)
 	{
+		g_recvd_char.message[g_recvd_char.i] = '\0';
 		ft_printf("%s", g_recvd_char.message);
+		free(g_recvd_char.message);
 		g_recvd_char.i = 0;
 		g_recvd_char.msg_len = 0;
 	}
@@ -96,7 +98,7 @@ void add_int()
 							g_recvd_char.msg_len_bits[30]  << 1 |
 							g_recvd_char.msg_len_bits[31]  << 0;
 							
-	g_recvd_char.message = malloc(sizeof(char) * g_recvd_char.msg_len);
+	g_recvd_char.message = malloc(sizeof(char) * g_recvd_char.msg_len + 1);
 	if (!g_recvd_char.message)
 		exit(1);
 	// ft_printf("msg_len = %d\n", g_recvd_char.msg_len);
