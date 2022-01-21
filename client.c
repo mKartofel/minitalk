@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 13:48:54 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/21 19:34:35 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,12 +33,14 @@ void send_msg(int pid, char* msg)
             {
                 if (kill(pid, SIGUSR2) == -1)
                     exit(2);
+                    
             }
                 
             else
             {
                 if (kill(pid, SIGUSR1) == -1)
                     exit(2);
+                    
             }
                 
             j--;
@@ -48,6 +50,43 @@ void send_msg(int pid, char* msg)
         i++;
     }
 
+}
+
+void send_msg_len_bits(int pid, int msg_len)
+{
+    int i;
+    int b;
+
+        i = 31;
+        while(i >= 0)
+        {
+            b = msg_len & (1u << i);
+            if (b != 0)
+            {
+                if (kill(pid, SIGUSR2) == -1)
+                    exit(2);
+                    
+            }
+                
+            else
+            {
+                if (kill(pid, SIGUSR1) == -1)
+                    exit(2);
+                    
+            }
+                
+            i--;
+            
+            pause();
+        }
+
+}
+
+void send_msg_len(int pid, char* msg){
+    int msg_len;
+
+    msg_len = ft_strlen(msg);
+    send_msg_len_bits(pid, msg_len);
 }
 
 void handle_SIGUSR1(int signum)
@@ -78,7 +117,8 @@ int main (int argc, char ** argv)
 	action_SIGUSR1.sa_flags = 0;
 
 	sigaction (SIGUSR1, &action_SIGUSR1, NULL);
-	
+
+    send_msg_len(pid, argv[2]);
     send_msg(pid, argv[2]);
     
 }

@@ -6,22 +6,29 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 10:38:23 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/21 19:36:18 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf/includes/ft_printf.h"
 #include <signal.h>
 
+#define NB_BITS_INT sizeof(int)
+#define NB_BITS_CHAR sizeof(char)
+
 typedef struct s_recvd_char
 {
 	int char_bits[8];
 	int nb_recvd;
+	int msg_len_bits[32];
+	int msg_len;
+	char *message;
+	int i;
 } t_recvd_char;
 
-t_recvd_char g_recvd_char = { .char_bits={0}, .nb_recvd=0 };
+t_recvd_char g_recvd_char = {.char_bits={0}, .nb_recvd=0, .msg_len_bits={0}, .msg_len=0, .i=0};
 
-void print_char()
+void add_char()
 {
 	char c;
 	
@@ -38,26 +45,93 @@ void print_char()
 		g_recvd_char.char_bits[5]  << 2 |
 		g_recvd_char.char_bits[6]  << 1 |
 		g_recvd_char.char_bits[7]  << 0;
+	
+	g_recvd_char.message[g_recvd_char.i] = c;
+	g_recvd_char.i++;
+	
+	if (g_recvd_char.i >= g_recvd_char.msg_len)
+	{
+		ft_printf("%s", g_recvd_char.message);
+		g_recvd_char.i = 0;
+		g_recvd_char.msg_len = 0;
+	}
+}
+
+void add_int()
+{
+	// for(int i=0; i < 32; i++)
+	// 	ft_printf("%d", g_recvd_char.msg_len_bits[i]);
+	// ft_printf("\n");
 		
-	ft_printf("%c",c);
+	g_recvd_char.msg_len =	g_recvd_char.msg_len_bits[0] << 31 |
+							g_recvd_char.msg_len_bits[1]  << 30 |
+							g_recvd_char.msg_len_bits[2]  << 29 |
+							g_recvd_char.msg_len_bits[3]  << 28 |
+							g_recvd_char.msg_len_bits[4]  << 27 |
+							g_recvd_char.msg_len_bits[5]  << 26 |
+							g_recvd_char.msg_len_bits[6]  << 25 |
+							g_recvd_char.msg_len_bits[7]  << 24 |
+							g_recvd_char.msg_len_bits[8]  << 23 |
+							g_recvd_char.msg_len_bits[9]  << 22 |
+							g_recvd_char.msg_len_bits[10]  << 21 |
+							g_recvd_char.msg_len_bits[11]  << 20 |
+							g_recvd_char.msg_len_bits[12]  << 19 |
+							g_recvd_char.msg_len_bits[13]  << 18 |
+							g_recvd_char.msg_len_bits[14]  << 17 |
+							g_recvd_char.msg_len_bits[15]  << 16 |
+							g_recvd_char.msg_len_bits[16]  << 15 |
+							g_recvd_char.msg_len_bits[17]  << 14 |
+							g_recvd_char.msg_len_bits[18]  << 13 |
+							g_recvd_char.msg_len_bits[19]  << 12 |
+							g_recvd_char.msg_len_bits[20]  << 11 |
+							g_recvd_char.msg_len_bits[21]  << 10 |
+							g_recvd_char.msg_len_bits[22]  << 9 |
+							g_recvd_char.msg_len_bits[23]  << 8 |
+							g_recvd_char.msg_len_bits[24]  << 7 |
+							g_recvd_char.msg_len_bits[25]  << 6 |
+							g_recvd_char.msg_len_bits[26]  << 5 |
+							g_recvd_char.msg_len_bits[27]  << 4 |
+							g_recvd_char.msg_len_bits[28]  << 3 |
+							g_recvd_char.msg_len_bits[29]  << 2 |
+							g_recvd_char.msg_len_bits[30]  << 1 |
+							g_recvd_char.msg_len_bits[31]  << 0;
+							
+	g_recvd_char.message = malloc(sizeof(char) * g_recvd_char.msg_len);
+	if (!g_recvd_char.message)
+		exit(1);
+	// ft_printf("msg_len = %d\n", g_recvd_char.msg_len);
 }
 
 void handle_SIGUSR1(int signum, siginfo_t *info, void *ucontext)
 {
 	(void)signum;
 	(void)ucontext;
-	int i = g_recvd_char.nb_recvd;
-	//ft_printf("nb_recvd = %d\n", g_recvd_char.nb_recvd);
-
-	g_recvd_char.char_bits[i] = 0; //sert à rien
-	g_recvd_char.nb_recvd++;
+	int i;
 	
-	if (g_recvd_char.nb_recvd >= 8)
+	
+	if (g_recvd_char.msg_len == 0)
 	{
-		print_char();
-		g_recvd_char.nb_recvd = 0;
+		i = g_recvd_char.nb_recvd;
+		g_recvd_char.msg_len_bits[i] = 0;
+		g_recvd_char.nb_recvd++;
+		if (g_recvd_char.nb_recvd >= 32)
+		{
+			add_int();
+			g_recvd_char.nb_recvd = 0;
+		}
 	}
-		
+	else
+	{
+		i = g_recvd_char.nb_recvd;
+		g_recvd_char.char_bits[i] = 0;
+		g_recvd_char.nb_recvd++;
+		if (g_recvd_char.nb_recvd >= 8)
+		{
+			add_char();
+			g_recvd_char.nb_recvd = 0;
+		}		
+	}
+
 	kill(info->si_pid, SIGUSR1);
 
 }
@@ -66,16 +140,30 @@ void handle_SIGUSR2(int signum, siginfo_t *info, void *ucontext)
 {
 	(void)signum;
 	(void)ucontext;
-	int i = g_recvd_char.nb_recvd;
-	//ft_printf("nb_recvd = %d\n", g_recvd_char.nb_recvd);
+	int i;
 	
-	g_recvd_char.char_bits[i] = 1; 
-	g_recvd_char.nb_recvd++;
 	
-	if (g_recvd_char.nb_recvd >= 8)
+	if (g_recvd_char.msg_len == 0)
 	{
-		print_char();
-		g_recvd_char.nb_recvd = 0;
+		i = g_recvd_char.nb_recvd;
+		g_recvd_char.msg_len_bits[i] = 1;
+		g_recvd_char.nb_recvd++;
+		if (g_recvd_char.nb_recvd >= 32)
+		{
+			add_int();
+			g_recvd_char.nb_recvd = 0;
+		}
+	}
+	else
+	{
+		i = g_recvd_char.nb_recvd;
+		g_recvd_char.char_bits[i] = 1;
+		g_recvd_char.nb_recvd++;
+		if (g_recvd_char.nb_recvd >= 8)
+		{
+			add_char();
+			g_recvd_char.nb_recvd = 0;
+		}		
 	}
 
 	kill(info->si_pid, SIGUSR1);
