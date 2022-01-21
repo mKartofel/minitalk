@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 09:49:27 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/21 10:38:23 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,8 +98,6 @@ int main (void)
 
 	sigaction (SIGUSR1, &action_SIGUSR1, NULL);
 	sigaction (SIGUSR2, &action_SIGUSR2, NULL);
-
-	//ft_bzero(g_recvd_char.char_bits, 8);
 
 	while (1){
 		pause();

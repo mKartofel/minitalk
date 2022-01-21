@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 09:50:46 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/21 10:33:59 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void handle_SIGUSR1(int signum)
 
 int main (int argc, char ** argv)
 {
-    if (argc != 3 || !argv[1] || !argv[2])
+    if (argc != 3 || !argv[1] || !argv[2] || ft_strlen(argv[2]) == 0)
     {
         ft_printf("Usage : %s <PID> <Message>\n", argv[0]);
         exit(1);
