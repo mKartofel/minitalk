@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/20 20:07:54 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/21 09:49:27 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,12 @@ t_recvd_char g_recvd_char = { .char_bits={0}, .nb_recvd=0 };
 
 void print_char()
 {
-	ft_printf("In print_char\n\n\n");
 	char c;
-
-	for(int i=0; i < 8; i++)
-		ft_printf("%d",g_recvd_char.char_bits[i]);
-	ft_printf("\n");
 	
+	// ft_printf("recvd= ");
+	// for(int i=0; i < 8; i++)
+	// 	ft_printf("%d",g_recvd_char.char_bits[i]);
+	// ft_printf("\n");
 	
 	c =	g_recvd_char.char_bits[0] << 7 |
 		g_recvd_char.char_bits[1]  << 6 |
@@ -47,19 +46,18 @@ void handle_SIGUSR1(int signum, siginfo_t *info, void *ucontext)
 {
 	(void)signum;
 	(void)ucontext;
-	ft_printf("nb_recvd = %d\n", g_recvd_char.nb_recvd);
-	if (g_recvd_char.nb_recvd == 7)
+	int i = g_recvd_char.nb_recvd;
+	//ft_printf("nb_recvd = %d\n", g_recvd_char.nb_recvd);
+
+	g_recvd_char.char_bits[i] = 0; //sert à rien
+	g_recvd_char.nb_recvd++;
+	
+	if (g_recvd_char.nb_recvd >= 8)
 	{
 		print_char();
 		g_recvd_char.nb_recvd = 0;
 	}
-	else
-	{
-		int i = g_recvd_char.nb_recvd;
-		g_recvd_char.char_bits[i] = 0; //sert à rien
-		g_recvd_char.nb_recvd++;
-	}
-
+		
 	kill(info->si_pid, SIGUSR1);
 
 }
@@ -68,17 +66,16 @@ void handle_SIGUSR2(int signum, siginfo_t *info, void *ucontext)
 {
 	(void)signum;
 	(void)ucontext;
-	ft_printf("nb_recvd = %d\n", g_recvd_char.nb_recvd);
-	if (g_recvd_char.nb_recvd == 7)
+	int i = g_recvd_char.nb_recvd;
+	//ft_printf("nb_recvd = %d\n", g_recvd_char.nb_recvd);
+	
+	g_recvd_char.char_bits[i] = 1; 
+	g_recvd_char.nb_recvd++;
+	
+	if (g_recvd_char.nb_recvd >= 8)
 	{
 		print_char();
 		g_recvd_char.nb_recvd = 0;
-	}
-	else
-	{
-		int i = g_recvd_char.nb_recvd;
-		g_recvd_char.char_bits[i] = 1;
-		g_recvd_char.nb_recvd++;
 	}
 
 	kill(info->si_pid, SIGUSR1);
@@ -102,7 +99,7 @@ int main (void)
 	sigaction (SIGUSR1, &action_SIGUSR1, NULL);
 	sigaction (SIGUSR2, &action_SIGUSR2, NULL);
 
-	ft_bzero(g_recvd_char.char_bits, 8);
+	//ft_bzero(g_recvd_char.char_bits, 8);
 
 	while (1){
 		pause();

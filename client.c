@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/20 20:08:48 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/21 09:50:46 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,33 +16,39 @@
 
 void send_msg(int pid, char* msg)
 {
-	(void)msg;
-
     int i;
+    int j;
     int b;
     char c;
 
-    c = 'z';
-    i = 7;
-    while(i >= 0)
+    i = 0;
+    while(msg[i])
     {
-        b = c & (1u << i);
-        if (b != 0)
-		{
-			kill(pid, SIGUSR2);
-			//ft_printf("SIGUSR2 envoyé !\n");
-		}
+        c = msg[i];
+        j = 7;
+        //ft_printf("sent= ");
+        while(j >= 0)
+        {
+            b = c & (1u << j);
+            if (b != 0)
+            {
+                kill(pid, SIGUSR2);
+                //ft_printf("1");
+            }
+                
+            else
+            {
+                kill(pid, SIGUSR1);
+                //ft_printf("0");
+            }
+                
+            j--;
             
-        else
-		{
-			kill(pid, SIGUSR1);
-			//ft_printf("SIGUSR1 envoyé !\n");
-		}
-            
-        i--;
-		
-		pause();
+            pause();
+        }
+        i++;
     }
+
 }
 
 void handle_SIGUSR1(int signum)
