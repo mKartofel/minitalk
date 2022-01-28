@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 19:34:35 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/28 21:20:35 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,90 +14,107 @@
 #include <stdlib.h>
 #include <signal.h>
 
-void send_msg(int pid, char* msg)
-{
-    int i;
-    int j;
-    int b;
-    char c;
+#include<stdio.h>
 
-    i = 0;
-    while(msg[i])
-    {
-        c = msg[i];
-        j = 7;
-        while(j >= 0)
+int g_message_over = 0;
+
+
+void handle_exit()
+{
+    ft_printf("Erreur client\n");
+    exit(2);
+}
+
+/*
+La fonction est appelée par send_msg() une fois le message complètement envoyé, 
+elle sert à envoyer le char null (8 bits 0) au serveur pour signaler la fin du message.
+*/
+void send_null_char_bit(int pid)
+{
+    static int s_pid = 0;
+    static int nb_null_bits_sent = 0;
+
+    if (pid != 0)
+        s_pid = pid;
+    if (kill(s_pid, SIGUSR1) == -1)
+        handle_exit();
+    nb_null_bits_sent++;
+    //printf("nb_null_bits_sent=%d\n", nb_null_bits_sent);
+    if (nb_null_bits_sent >= 8)
         {
-            b = c & (1u << j);
-            if (b != 0)
-            {
-                if (kill(pid, SIGUSR2) == -1)
-                    exit(2);
-                    
-            }
-                
-            else
-            {
-                if (kill(pid, SIGUSR1) == -1)
-                    exit(2);
-                    
-            }
-                
-            j--;
-            
-            pause();
+            printf("Message envoyé au serveur\n");
+            exit(0);
         }
+
+}
+
+/*
+128 codé en binaire sur 8 bits = 10000000
+C'est ce 1 qu'on déplace en utilisant un bitwise operator pour assigner un bit 0 ou 1 au char c
+
+*/
+void send_char_bit(int pid, char* msg)
+{
+    static char * s_msg = NULL;
+    static int nb_bits_sent = 0;
+    static int i = 0;
+    static int s_pid = 0;
+
+    if (msg != NULL)
+        s_msg = msg;
+    if (pid != 0)
+        s_pid = pid;
+
+    //printf("s_msg=%s\n",s_msg);
+    if (s_msg[i] == '\0')
+    {
+        send_null_char_bit(s_pid);
+        g_message_over = 1;
+        return ;
+    }
+    if ((s_msg[i] & (128 >> nb_bits_sent)) != 0)
+    {
+        if (kill(s_pid, SIGUSR2) == -1)
+            handle_exit();
+        //printf("1\n"); 
+    }
+    else
+    {
+        if (kill(s_pid, SIGUSR1) == -1)
+            handle_exit();
+        //printf("0\n");
+    }
+    nb_bits_sent++;
+    if (nb_bits_sent >= 8)
+    {
+        nb_bits_sent = 0;
         i++;
     }
 
 }
 
-void send_msg_len_bits(int pid, int msg_len)
+
+void handle_SIGUSR(int signum)
 {
-    int i;
-    int b;
-
-        i = 31;
-        while(i >= 0)
-        {
-            b = msg_len & (1u << i);
-            if (b != 0)
-            {
-                if (kill(pid, SIGUSR2) == -1)
-                    exit(2);
-                    
-            }
-                
-            else
-            {
-                if (kill(pid, SIGUSR1) == -1)
-                    exit(2);
-                    
-            }
-                
-            i--;
-            
-            pause();
-        }
-
-}
-
-void send_msg_len(int pid, char* msg){
-    int msg_len;
-
-    msg_len = ft_strlen(msg);
-    send_msg_len_bits(pid, msg_len);
-}
-
-void handle_SIGUSR1(int signum)
-{
-	(void)signum;
+    //printf("signum=%d\n",signum);
+	if (signum == SIGUSR1)
+    {
+        if (g_message_over == 0)
+            send_char_bit(0, NULL);
+        else
+            send_null_char_bit(0);
+    }
+    else if (signum == SIGUSR2)
+    {
+        ft_printf("Le serveur s'est interrompu, arrêt du client...\n");
+        handle_exit();
+    }
+    
 }
 
 
 int main (int argc, char ** argv)
 {
-	struct sigaction action_SIGUSR1;
     int pid;
 
     if (argc != 3 || !argv[1] || !argv[2] || ft_strlen(argv[2]) == 0)
@@ -111,14 +128,14 @@ int main (int argc, char ** argv)
         ft_printf("Incorrect PID\nUsage : %s <PID> <Message>\n", argv[0]);
         exit(1);
     }
-	
-	action_SIGUSR1.sa_handler = handle_SIGUSR1;
-	sigemptyset (&action_SIGUSR1.sa_mask);
-	action_SIGUSR1.sa_flags = 0;
 
-	sigaction (SIGUSR1, &action_SIGUSR1, NULL);
+	signal (SIGUSR1, handle_SIGUSR);
+	signal (SIGUSR2, handle_SIGUSR);
 
-    send_msg_len(pid, argv[2]);
-    send_msg(pid, argv[2]);
+    send_char_bit(pid, argv[2]);
+
+    while (1)
+        pause();
     
+    return(0);
 }

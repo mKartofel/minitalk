@@ -8,4 +8,5 @@ fr.subject.pdf
 ft_printf/libft/libft.a
 ft_printf/libftprintf.a
 ft_printf/libft/*.o
- ft_printf/srcs/*.o
+ft_printf/srcs/*.o
+test.c
