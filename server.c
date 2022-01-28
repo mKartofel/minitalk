@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/28 21:24:58 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/28 21:35:19 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,9 @@ char * print_message(char* message)
 C'est ce 1 qu'on déplace en utilisant un bitwise operator pour assigner un bit 0 ou 1 au char c
 
 c == 0 signifie qu'on a reçu le char nul qui marque la fin du message
+
+Il est très important de garder s_pid en static car info->si_pid peut devenir 0 dans certains cas, ce qui fait que le
+serveur s'envoie des SIGUSR1 à lui même en boucle !
 */
 void handle_SIGUSR(int signum, siginfo_t *info, void *ucontext)
 {
