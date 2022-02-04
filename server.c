@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/02/04 11:23:05 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/02/04 11:48:39 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,9 @@ void	handle_exit(int pid, char *message)
 }
 
 /*
-Ajoute le char reçu au message en concaténant les deux. Retourne la chaîne 
-concaténée et libère le message passé en argument.
-Si le message était NULL, la chaîne retournée est uniquement composée du char
-reçu.
+Add the received char to the message by concatenating the two. Returns
+the concatenated string and free the message passed in argument.
+If message is NULL, the returned string only contains the received char.
 */
 char	*add_char_to_msg(char *message, char c, int pid)
 {
@@ -56,15 +55,13 @@ char	*print_message(char *message)
 }
 
 /*
-128 codé en binaire sur 8 bits = 10000000
-C'est ce 1 qu'on déplace en utilisant un bitwise operator pour assigner un bit 
-0 ou 1 au char c
+128 in binary, coded on 8 bits = 10000000
+It is this 1 that is moved using bitwise operators to put each bit to
+0 or 1 in the char.
+c == 0 means that we received the null char, so the message is over.
 
-c == 0 signifie qu'on a reçu le char nul qui marque la fin du message
-
-Il est très important de garder s_pid en static car info->si_pid peut devenir 0
-dans certains cas, ce qui fait que le
-serveur s'envoie des SIGUSR1 à lui même en boucle !
+It is very important to keep a static s_pid because nfo->si_pid can become 0
+in some cases, causing the server to send itself SIGUSR1 indefinitely !
 */
 void	handle_sigusr(int signum, siginfo_t *info, void *ucontext)
 {
@@ -95,16 +92,16 @@ void	handle_sigusr(int signum, siginfo_t *info, void *ucontext)
 }
 
 /*
-Pour bloquer les autres signaux durant l'execution du handler, on précise le 
-champ sa_mask de notre structure sigaction.
-Cela empêche que le handler soit interrompu par un autre signal.
+To block other signals during the handler's execution, we have to specify
+the sa_mask member of the sigaction struct.
+It prevents the handler form being interrupted by another signal.
 
-On ajoute SIGINT et SIGQUIT au signal set pour bloquer ces signaux lorsque 
-notre handler s'execute.
+We add SIGINT and SIGQUIT to the signal set o that they will be blocked
+if the handler is executing.
 
-Le flag SA_SIGINFO ajouté dans le champ sa_flags de la structure sigaction 
-permet d'obtenir des informations supplémentaires sur
-le signal reçu, notamment le PID du processus à l'origine du signal.
+The SA_SIGINFO flag is added in the sa_flags member of the sigaction struct
+to obtain additionnal information on the signal, such as the PID of the
+process who sent the signal.
 
 https://www.gnu.org/software/libc/manual/html_node/Blocking-for-Handler.html
 */

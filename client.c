@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/02/04 11:24:41 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/02/04 11:39:19 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,10 @@ void	handle_exit_client(void)
 }
 
 /*
-La fonction est appelée par send_msg() une fois le message complètement 
-envoyé, elle sert à envoyer le char null (8 bits 0) au serveur pour signaler 
-la fin du message.
-Elle retourne 1 lorsque le char null est complètement envoyé, 0 sinon.
+The function is called by send_msg() once the message is completely sent,
+it sends the null char (eight 0 bits) to notify the server that the
+message is over.
+The function returns 1 when the null char is completely sent, 0 otherwise.
 */
 int	send_null_char_bit(int pid)
 {
@@ -40,18 +40,18 @@ int	send_null_char_bit(int pid)
 }
 
 /*
-La fonction envoit 1 bit d'un char de la str qui doit être envoyée au serveur. 
-A chaque appel de cette fonction, le bit suivant est envoyé et la fonction 
-progresse dans l'envoi du message en conservant ses variables en static
-pour qu'elles persistent entre chaque appel de fonction.
-Elle retourne 1 lorsque le message est complètement envoyé, 0 sinon.
-Si le message est complètement envoyé, elle appelle send_null_char_bit() qui 
-prend alors le relais pour envoyer le char null marquant la fin de message au 
-serveur.
+The function send 1 bit of a char from the string that needs to be sent to the 
+server. Each time the function is called, the next bit is sent and the function
+keeps track of it progress through the string with static variables that
+persist between each function call.
+The function returns 1 when the message is completely sent, 0 otherwise.
+If the message is completely sent, it calls send_null_char_bit() which
+in turns send a null char to notify the server that the message is
+over.
 
-128 codé en binaire sur 8 bits = 10000000
-C'est ce 1 qu'on déplace en utilisant un bitwise operator pour assigner un bit 
-0 ou 1 au char c
+128 in binary, coded on 8 bits = 10000000
+It is this 1 that is moved using bitwise operators to put each bit to
+0 or 1 in the char we're sending.
 */
 int	send_char_bit(int pid, char *msg)
 {
