@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/28 21:20:35 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/02/04 09:20:43 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 #include<stdio.h>
 
-int g_message_over = 0;
+// int g_message_over = 0;
 
 
 void handle_exit()
@@ -29,7 +29,7 @@ void handle_exit()
 La fonction est appelée par send_msg() une fois le message complètement envoyé, 
 elle sert à envoyer le char null (8 bits 0) au serveur pour signaler la fin du message.
 */
-void send_null_char_bit(int pid)
+int send_null_char_bit(int pid)
 {
     static int s_pid = 0;
     static int nb_null_bits_sent = 0;
@@ -39,12 +39,9 @@ void send_null_char_bit(int pid)
     if (kill(s_pid, SIGUSR1) == -1)
         handle_exit();
     nb_null_bits_sent++;
-    //printf("nb_null_bits_sent=%d\n", nb_null_bits_sent);
     if (nb_null_bits_sent >= 8)
-        {
-            printf("Message envoyé au serveur\n");
-            exit(0);
-        }
+        return 1;
+    return 0;
 
 }
 
@@ -53,7 +50,7 @@ void send_null_char_bit(int pid)
 C'est ce 1 qu'on déplace en utilisant un bitwise operator pour assigner un bit 0 ou 1 au char c
 
 */
-void send_char_bit(int pid, char* msg)
+int send_char_bit(int pid, char* msg)
 {
     static char * s_msg = NULL;
     static int nb_bits_sent = 0;
@@ -69,8 +66,8 @@ void send_char_bit(int pid, char* msg)
     if (s_msg[i] == '\0')
     {
         send_null_char_bit(s_pid);
-        g_message_over = 1;
-        return ;
+        // g_message_over = 1;
+        return 1;
     }
     if ((s_msg[i] & (128 >> nb_bits_sent)) != 0)
     {
@@ -90,19 +87,27 @@ void send_char_bit(int pid, char* msg)
         nb_bits_sent = 0;
         i++;
     }
-
+    return 0;
 }
 
 
 void handle_SIGUSR(int signum)
 {
-    //printf("signum=%d\n",signum);
+    static int msg_sent = 0;
+    static int end_of_msg_sent = 0;
+
+    if (end_of_msg_sent)
+        {
+            printf("Message envoyé au serveur\n");
+            exit(0);   
+        }
 	if (signum == SIGUSR1)
     {
-        if (g_message_over == 0)
-            send_char_bit(0, NULL);
+        if (msg_sent == 0)
+            msg_sent = send_char_bit(0, NULL);
         else
-            send_null_char_bit(0);
+            end_of_msg_sent = send_null_char_bit(0);
+
     }
     else if (signum == SIGUSR2)
     {
