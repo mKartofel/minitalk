@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 19:42:25 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/28 13:59:44 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,11 @@
 #define NB_BITS_INT sizeof(int)
 #define NB_BITS_CHAR sizeof(char)
 
+
+
+
+#include <stdio.h>
+
 typedef struct s_recvd_char
 {
 	int char_bits[8];
@@ -24,9 +29,11 @@ typedef struct s_recvd_char
 	int msg_len;
 	char *message;
 	int i;
+	int current_time;
+	int time_last_signal_rcvd;
 } t_recvd_char;
 
-t_recvd_char g_recvd_char = {.char_bits={0}, .nb_recvd=0, .msg_len_bits={0}, .msg_len=0, .i=0};
+t_recvd_char g_recvd_char = {.char_bits={0}, .nb_recvd=0, .msg_len_bits={0}, .msg_len=0, .i=0, .message=NULL, .current_time=0, .time_last_signal_rcvd=0};
 
 void add_char()
 {
@@ -52,8 +59,9 @@ void add_char()
 	if (g_recvd_char.i >= g_recvd_char.msg_len)
 	{
 		g_recvd_char.message[g_recvd_char.i] = '\0';
-		ft_printf("%s", g_recvd_char.message);
+		ft_printf("\nmsg_received by server :\n>>>%s<<<\n", g_recvd_char.message);
 		free(g_recvd_char.message);
+		g_recvd_char.message = NULL;
 		g_recvd_char.i = 0;
 		g_recvd_char.msg_len = 0;
 	}
@@ -98,11 +106,12 @@ void add_int()
 							g_recvd_char.msg_len_bits[30]  << 1 |
 							g_recvd_char.msg_len_bits[31]  << 0;
 							
+	printf("msg_len received = %d\n", g_recvd_char.msg_len);
 	g_recvd_char.message = malloc(sizeof(char) * g_recvd_char.msg_len + 1);
 	if (!g_recvd_char.message)
 		exit(1);
-	// ft_printf("msg_len = %d\n", g_recvd_char.msg_len);
 }
+
 
 void handle_SIGUSR1(int signum, siginfo_t *info, void *ucontext)
 {
@@ -110,9 +119,12 @@ void handle_SIGUSR1(int signum, siginfo_t *info, void *ucontext)
 	(void)ucontext;
 	int i;
 	
+	//g_recvd_char.time_last_signal_rcvd = g_recvd_char.current_time;
+	printf("byte received=0\n");
 	
 	if (g_recvd_char.msg_len == 0)
 	{
+		
 		i = g_recvd_char.nb_recvd;
 		g_recvd_char.msg_len_bits[i] = 0;
 		g_recvd_char.nb_recvd++;
@@ -133,8 +145,18 @@ void handle_SIGUSR1(int signum, siginfo_t *info, void *ucontext)
 			g_recvd_char.nb_recvd = 0;
 		}		
 	}
-
 	kill(info->si_pid, SIGUSR1);
+
+	// sleep(1);
+	// printf("TIMEOUT\n");
+	// if(g_recvd_char.message != NULL)
+	// {
+	// 	free(g_recvd_char.message);
+	// 	g_recvd_char.message = NULL;
+	// }
+	// g_recvd_char.i = 0;
+	// g_recvd_char.msg_len = 0;
+	// g_recvd_char.nb_recvd = 0;
 
 }
 
@@ -144,7 +166,9 @@ void handle_SIGUSR2(int signum, siginfo_t *info, void *ucontext)
 	(void)ucontext;
 	int i;
 	
-	
+	//g_recvd_char.time_last_signal_rcvd = g_recvd_char.current_time;
+	printf("byte received=1\n");
+
 	if (g_recvd_char.msg_len == 0)
 	{
 		i = g_recvd_char.nb_recvd;
@@ -167,8 +191,20 @@ void handle_SIGUSR2(int signum, siginfo_t *info, void *ucontext)
 			g_recvd_char.nb_recvd = 0;
 		}		
 	}
-
 	kill(info->si_pid, SIGUSR1);
+
+
+
+	// sleep(1);
+	// printf("TIMEOUT\n");
+	// if(g_recvd_char.message != NULL)
+	// {
+	// 	free(g_recvd_char.message);
+	// 	g_recvd_char.message = NULL;
+	// }
+	// g_recvd_char.i = 0;
+	// g_recvd_char.msg_len = 0;
+	// g_recvd_char.nb_recvd = 0;
 
 }
 
@@ -190,9 +226,11 @@ int main (void)
 	sigaction (SIGUSR2, &action_SIGUSR2, NULL);
 
 	while (1){
-		pause();
-		//ft_printf("pause ret : %d\n", ret);
+		sleep(3);
 	}
+
+	if(g_recvd_char.message != NULL)
+		free(g_recvd_char.message);
 	
 	return 0;
 }

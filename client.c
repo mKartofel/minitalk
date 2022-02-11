@@ -6,13 +6,17 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/21 19:34:35 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/01/28 14:33:17 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf/includes/ft_printf.h"
 #include <stdlib.h>
 #include <signal.h>
+
+
+
+#include <stdio.h>
 
 void send_msg(int pid, char* msg)
 {
@@ -31,22 +35,22 @@ void send_msg(int pid, char* msg)
             b = c & (1u << j);
             if (b != 0)
             {
+                printf("byte sent=1\n");
                 if (kill(pid, SIGUSR2) == -1)
                     exit(2);
-                    
             }
                 
             else
             {
+                printf("byte sent=0\n");  
                 if (kill(pid, SIGUSR1) == -1)
                     exit(2);
-                    
             }
                 
             j--;
-            
-            pause();
+            usleep(1000);
         }
+        printf("%c\n",c);
         i++;
     }
 
@@ -63,6 +67,7 @@ void send_msg_len_bits(int pid, int msg_len)
             b = msg_len & (1u << i);
             if (b != 0)
             {
+                printf("byte sent=1\n");
                 if (kill(pid, SIGUSR2) == -1)
                     exit(2);
                     
@@ -70,6 +75,7 @@ void send_msg_len_bits(int pid, int msg_len)
                 
             else
             {
+                printf("byte sent=0\n");
                 if (kill(pid, SIGUSR1) == -1)
                     exit(2);
                     
@@ -77,7 +83,7 @@ void send_msg_len_bits(int pid, int msg_len)
                 
             i--;
             
-            pause();
+            usleep(1000);
         }
 
 }
@@ -86,6 +92,7 @@ void send_msg_len(int pid, char* msg){
     int msg_len;
 
     msg_len = ft_strlen(msg);
+    printf("msg_len=%d\n",msg_len);
     send_msg_len_bits(pid, msg_len);
 }
 
@@ -119,6 +126,9 @@ int main (int argc, char ** argv)
 	sigaction (SIGUSR1, &action_SIGUSR1, NULL);
 
     send_msg_len(pid, argv[2]);
+    printf("msg_len sent !\nfull msg is :\n%s\n", argv[2]);
+    //printf("char sent so far:\n");
     send_msg(pid, argv[2]);
+    printf("\nmsg completely sent by client\n");
     
 }
