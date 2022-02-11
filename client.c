@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:28:56 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/02/11 10:40:25 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/02/11 15:19:11 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ int	send_null_char_bit(int pid)
 }
 
 /*
-The function send 1 bit of a char from the string that needs to be sent to the 
+The function sends 1 bit of a char from the string that needs to be sent to the 
 server. Each time the function is called, the next bit is sent and the function
 keeps track of it progress through the string with static variables that
 persist between each function call.

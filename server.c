@@ -6,17 +6,22 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/02/11 13:37:05 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/02/11 15:17:58 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minitalk.h"
 
+/*
+This function exits the program gracefully by first freeing malloc'ed message 
+string and sending a SIGUSR2 signal to notify the client that server
+has shut down.
+*/
 void	handle_exit(int pid, char *message)
 {
 	if (message)
 		free(message);
-	(void)pid;
+	kill(pid, SIGUSR2);
 	exit(1);
 }
 
