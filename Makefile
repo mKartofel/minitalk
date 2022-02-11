@@ -6,7 +6,7 @@
 #    By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/01/20 19:36:03 by vfiszbin          #+#    #+#              #
-#    Updated: 2022/01/20 20:06:06 by vfiszbin         ###   ########.fr        #
+#    Updated: 2022/02/04 11:11:17 by vfiszbin         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,8 +32,8 @@ ${FT_PRINTF}:
 $(SERVER) : server.o
 	${CC} server.o ft_printf/libftprintf.a -o server
 
-$(CLIENT) : client.o
-	${CC} client.o ft_printf/libftprintf.a -o client
+$(CLIENT) : client.o client_utils.o
+	${CC} client.o client_utils.o ft_printf/libftprintf.a -o client
 
 
 clean:

@@ -1,18 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isdigit.c                                       :+:      :+:    :+:   */
+/*   client_utils.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/11/29 11:38:51 by vfiszbin          #+#    #+#             */
-/*   Updated: 2021/11/29 11:45:37 by vfiszbin         ###   ########.fr       */
+/*   Created: 2022/02/04 11:07:09 by vfiszbin          #+#    #+#             */
+/*   Updated: 2022/02/04 11:25:11 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minitalk.h"
 
-int	ft_isdigit(int c)
+void	send_signal(char *s_msg, int i, int s_pid, int nb_bits_sent)
 {
-	return (c >= '0' && c <= '9');
+	if ((s_msg[i] & (128 >> nb_bits_sent)) != 0)
+	{
+		if (kill(s_pid, SIGUSR2) == -1)
+			handle_exit_client();
+	}
+	else
+	{
+		if (kill(s_pid, SIGUSR1) == -1)
+			handle_exit_client();
+	}
 }

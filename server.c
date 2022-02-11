@@ -6,231 +6,121 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/01/28 13:59:44 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/02/11 10:40:08 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ft_printf/includes/ft_printf.h"
-#include <signal.h>
+#include "minitalk.h"
 
-#define NB_BITS_INT sizeof(int)
-#define NB_BITS_CHAR sizeof(char)
-
-
-
-
-#include <stdio.h>
-
-typedef struct s_recvd_char
+void	handle_exit(int pid, char *message)
 {
-	int char_bits[8];
-	int nb_recvd;
-	int msg_len_bits[32];
-	int msg_len;
-	char *message;
-	int i;
-	int current_time;
-	int time_last_signal_rcvd;
-} t_recvd_char;
+	if (message)
+		free(message);
+	(void)pid;
+	exit(1);
+}
 
-t_recvd_char g_recvd_char = {.char_bits={0}, .nb_recvd=0, .msg_len_bits={0}, .msg_len=0, .i=0, .message=NULL, .current_time=0, .time_last_signal_rcvd=0};
-
-void add_char()
+/*
+Add the received char to the message by concatenating the two. Returns
+the concatenated string and free the message passed in argument.
+If message is NULL, the returned string only contains the received char.
+*/
+char	*add_char_to_msg(char *message, char c, int pid)
 {
-	char c;
-	
-	// ft_printf("recvd= ");
-	// for(int i=0; i < 8; i++)
-	// 	ft_printf("%d",g_recvd_char.char_bits[i]);
-	// ft_printf("\n");
-	
-	c =	g_recvd_char.char_bits[0] << 7 |
-		g_recvd_char.char_bits[1]  << 6 |
-		g_recvd_char.char_bits[2]  << 5 |
-		g_recvd_char.char_bits[3]  << 4 |
-		g_recvd_char.char_bits[4]  << 3 |
-		g_recvd_char.char_bits[5]  << 2 |
-		g_recvd_char.char_bits[6]  << 1 |
-		g_recvd_char.char_bits[7]  << 0;
-	
-	g_recvd_char.message[g_recvd_char.i] = c;
-	g_recvd_char.i++;
-	
-	if (g_recvd_char.i >= g_recvd_char.msg_len)
+	char	*ret_str;
+	char	c_str[2];
+
+	if (message == NULL)
 	{
-		g_recvd_char.message[g_recvd_char.i] = '\0';
-		ft_printf("\nmsg_received by server :\n>>>%s<<<\n", g_recvd_char.message);
-		free(g_recvd_char.message);
-		g_recvd_char.message = NULL;
-		g_recvd_char.i = 0;
-		g_recvd_char.msg_len = 0;
+		ret_str = malloc(sizeof(char) * 2);
+		if (!ret_str)
+			handle_exit(pid, message);
+		ret_str[0] = c;
+		ret_str[1] = '\0';
+		return (ret_str);
 	}
+	c_str[0] = c;
+	c_str[1] = '\0';
+	ret_str = ft_strjoin(message, c_str);
+	if (!ret_str)
+		handle_exit(pid, message);
+	return (ret_str);
 }
 
-void add_int()
+char	*print_message(char *message)
 {
-	// for(int i=0; i < 32; i++)
-	// 	ft_printf("%d", g_recvd_char.msg_len_bits[i]);
-	// ft_printf("\n");
-		
-	g_recvd_char.msg_len =	g_recvd_char.msg_len_bits[0] << 31 |
-							g_recvd_char.msg_len_bits[1]  << 30 |
-							g_recvd_char.msg_len_bits[2]  << 29 |
-							g_recvd_char.msg_len_bits[3]  << 28 |
-							g_recvd_char.msg_len_bits[4]  << 27 |
-							g_recvd_char.msg_len_bits[5]  << 26 |
-							g_recvd_char.msg_len_bits[6]  << 25 |
-							g_recvd_char.msg_len_bits[7]  << 24 |
-							g_recvd_char.msg_len_bits[8]  << 23 |
-							g_recvd_char.msg_len_bits[9]  << 22 |
-							g_recvd_char.msg_len_bits[10]  << 21 |
-							g_recvd_char.msg_len_bits[11]  << 20 |
-							g_recvd_char.msg_len_bits[12]  << 19 |
-							g_recvd_char.msg_len_bits[13]  << 18 |
-							g_recvd_char.msg_len_bits[14]  << 17 |
-							g_recvd_char.msg_len_bits[15]  << 16 |
-							g_recvd_char.msg_len_bits[16]  << 15 |
-							g_recvd_char.msg_len_bits[17]  << 14 |
-							g_recvd_char.msg_len_bits[18]  << 13 |
-							g_recvd_char.msg_len_bits[19]  << 12 |
-							g_recvd_char.msg_len_bits[20]  << 11 |
-							g_recvd_char.msg_len_bits[21]  << 10 |
-							g_recvd_char.msg_len_bits[22]  << 9 |
-							g_recvd_char.msg_len_bits[23]  << 8 |
-							g_recvd_char.msg_len_bits[24]  << 7 |
-							g_recvd_char.msg_len_bits[25]  << 6 |
-							g_recvd_char.msg_len_bits[26]  << 5 |
-							g_recvd_char.msg_len_bits[27]  << 4 |
-							g_recvd_char.msg_len_bits[28]  << 3 |
-							g_recvd_char.msg_len_bits[29]  << 2 |
-							g_recvd_char.msg_len_bits[30]  << 1 |
-							g_recvd_char.msg_len_bits[31]  << 0;
-							
-	printf("msg_len received = %d\n", g_recvd_char.msg_len);
-	g_recvd_char.message = malloc(sizeof(char) * g_recvd_char.msg_len + 1);
-	if (!g_recvd_char.message)
-		exit(1);
+	ft_putstr_fd(message, 1);
+	free(message);
+	return (NULL);
 }
 
+/*
+128 in binary, coded on 8 bits = 10000000
+It is this 1 that is moved using bitwise operators to put each bit to
+0 or 1 in the char.
+c == 0 means that we received the null char, so the message is over.
 
-void handle_SIGUSR1(int signum, siginfo_t *info, void *ucontext)
+It is very important to keep a static s_pid because nfo->si_pid can become 0
+in some cases, causing the server to send itself SIGUSR1 indefinitely !
+*/
+void	handle_sigusr(int signum, siginfo_t *info, void *ucontext)
 {
-	(void)signum;
+	static unsigned char	c;
+	static int				nb_bits_rcvd = 0;
+	static char				*message = NULL;
+	static int				s_pid = 0;
+
 	(void)ucontext;
-	int i;
-	
-	//g_recvd_char.time_last_signal_rcvd = g_recvd_char.current_time;
-	printf("byte received=0\n");
-	
-	if (g_recvd_char.msg_len == 0)
+	if (info->si_pid != 0)
+		s_pid = info->si_pid ;
+	if (signum == SIGUSR1)
+		c = c & ~(128 >> nb_bits_rcvd);
+	else if (signum == SIGUSR2)
+		c = c | (128 >> nb_bits_rcvd);
+	nb_bits_rcvd++;
+	if (nb_bits_rcvd == 8)
 	{
-		
-		i = g_recvd_char.nb_recvd;
-		g_recvd_char.msg_len_bits[i] = 0;
-		g_recvd_char.nb_recvd++;
-		if (g_recvd_char.nb_recvd >= 32)
-		{
-			add_int();
-			g_recvd_char.nb_recvd = 0;
-		}
+		if (c != 0)
+			message = add_char_to_msg(message, c, s_pid);
+		else
+			message = print_message(message);
+		nb_bits_rcvd = 0;
+		c = 128;
 	}
-	else
-	{
-		i = g_recvd_char.nb_recvd;
-		g_recvd_char.char_bits[i] = 0;
-		g_recvd_char.nb_recvd++;
-		if (g_recvd_char.nb_recvd >= 8)
-		{
-			add_char();
-			g_recvd_char.nb_recvd = 0;
-		}		
-	}
-	kill(info->si_pid, SIGUSR1);
-
-	// sleep(1);
-	// printf("TIMEOUT\n");
-	// if(g_recvd_char.message != NULL)
-	// {
-	// 	free(g_recvd_char.message);
-	// 	g_recvd_char.message = NULL;
-	// }
-	// g_recvd_char.i = 0;
-	// g_recvd_char.msg_len = 0;
-	// g_recvd_char.nb_recvd = 0;
-
+	if (kill(s_pid, SIGUSR1) == -1)
+		handle_exit(s_pid, message);
 }
 
-void handle_SIGUSR2(int signum, siginfo_t *info, void *ucontext)
+/*
+To block other signals during the handler's execution, we have to specify
+the sa_mask member of the sigaction struct.
+It prevents the handler form being interrupted by another signal.
+
+We add SIGINT and SIGQUIT to the signal set o that they will be blocked
+if the handler is executing.
+
+The SA_SIGINFO flag is added in the sa_flags member of the sigaction struct
+to obtain additionnal information on the signal, such as the PID of the
+process who sent the signal.
+
+https://www.gnu.org/software/libc/manual/html_node/Blocking-for-Handler.html
+*/
+int	main(void)
 {
-	(void)signum;
-	(void)ucontext;
-	int i;
-	
-	//g_recvd_char.time_last_signal_rcvd = g_recvd_char.current_time;
-	printf("byte received=1\n");
+	struct sigaction	s_action_sigusr;
+	sigset_t			block_mask;
 
-	if (g_recvd_char.msg_len == 0)
-	{
-		i = g_recvd_char.nb_recvd;
-		g_recvd_char.msg_len_bits[i] = 1;
-		g_recvd_char.nb_recvd++;
-		if (g_recvd_char.nb_recvd >= 32)
-		{
-			add_int();
-			g_recvd_char.nb_recvd = 0;
-		}
-	}
-	else
-	{
-		i = g_recvd_char.nb_recvd;
-		g_recvd_char.char_bits[i] = 1;
-		g_recvd_char.nb_recvd++;
-		if (g_recvd_char.nb_recvd >= 8)
-		{
-			add_char();
-			g_recvd_char.nb_recvd = 0;
-		}		
-	}
-	kill(info->si_pid, SIGUSR1);
-
-
-
-	// sleep(1);
-	// printf("TIMEOUT\n");
-	// if(g_recvd_char.message != NULL)
-	// {
-	// 	free(g_recvd_char.message);
-	// 	g_recvd_char.message = NULL;
-	// }
-	// g_recvd_char.i = 0;
-	// g_recvd_char.msg_len = 0;
-	// g_recvd_char.nb_recvd = 0;
-
-}
-
-int main (void)
-{
-	struct sigaction action_SIGUSR1, action_SIGUSR2;
-
+	sigemptyset (&block_mask);
+	sigaddset(&block_mask, SIGINT);
+	sigaddset(&block_mask, SIGQUIT);
+	s_action_sigusr.sa_handler = 0;
+	s_action_sigusr.sa_sigaction = handle_sigusr;
+	s_action_sigusr.sa_mask = block_mask;
+	s_action_sigusr.sa_flags = SA_SIGINFO;
+	sigaction (SIGUSR1, &s_action_sigusr, NULL);
+	sigaction (SIGUSR2, &s_action_sigusr, NULL);
 	ft_printf("%d\n", getpid());
-
-	action_SIGUSR1.sa_sigaction = handle_SIGUSR1;
-	sigemptyset (&action_SIGUSR1.sa_mask);
-	action_SIGUSR1.sa_flags = SA_SIGINFO;
-
-	action_SIGUSR2.sa_sigaction = handle_SIGUSR2;
-	sigemptyset (&action_SIGUSR2.sa_mask);
-	action_SIGUSR2.sa_flags = SA_SIGINFO;
-
-	sigaction (SIGUSR1, &action_SIGUSR1, NULL);
-	sigaction (SIGUSR2, &action_SIGUSR2, NULL);
-
-	while (1){
-		sleep(3);
-	}
-
-	if(g_recvd_char.message != NULL)
-		free(g_recvd_char.message);
-	
-	return 0;
+	while (1)
+		pause();
+	return (0);
 }
