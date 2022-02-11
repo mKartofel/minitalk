@@ -6,7 +6,7 @@
 /*   By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/20 11:29:28 by vfiszbin          #+#    #+#             */
-/*   Updated: 2022/02/11 10:40:08 by vfiszbin         ###   ########.fr       */
+/*   Updated: 2022/02/11 13:37:05 by vfiszbin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ char	*add_char_to_msg(char *message, char c, int pid)
 	ret_str = ft_strjoin(message, c_str);
 	if (!ret_str)
 		handle_exit(pid, message);
+	free(message);
 	return (ret_str);
 }
 
@@ -96,7 +97,7 @@ To block other signals during the handler's execution, we have to specify
 the sa_mask member of the sigaction struct.
 It prevents the handler form being interrupted by another signal.
 
-We add SIGINT and SIGQUIT to the signal set o that they will be blocked
+We add SIGINT and SIGQUIT to the signal set so they are blocked
 if the handler is executing.
 
 The SA_SIGINFO flag is added in the sa_flags member of the sigaction struct
