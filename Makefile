@@ -6,7 +6,7 @@
 #    By: vfiszbin <vfiszbin@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/01/20 19:36:03 by vfiszbin          #+#    #+#              #
-#    Updated: 2022/02/04 11:11:17 by vfiszbin         ###   ########.fr        #
+#    Updated: 2022/02/11 10:55:05 by vfiszbin         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -40,6 +40,7 @@ clean:
 	${MAKE} clean -C ./ft_printf
 	${RM} server.o
 	${RM} client.o
+	${RM} client_utils.o
 
 fclean: clean
 	${MAKE} fclean -C ./ft_printf
